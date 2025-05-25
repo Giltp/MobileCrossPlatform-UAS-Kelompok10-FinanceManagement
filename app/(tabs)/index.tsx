@@ -1,31 +1,34 @@
-import { StyleSheet } from 'react-native';
+import { View, Text, Button } from 'react-native'
+import { supabase } from '@/lib/supabase'
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+export default function Home() {
+  const testInsert = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
 
-export default function TabOneScreen() {
+    if (!user) {
+      console.log('⚠️ Belum login');
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert([{
+        title: 'Test',
+        amount: 10000,
+        user_id: user.id, // Ini penting untuk lolos policy
+        type: 'expense',
+        date: new Date().toISOString()
+      }]);
+
+    if (error) console.log('❌ Error:', error);
+    else console.log('✅ Success:', data);
+  };
+
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Welcome to Finance App</Text>
+      <Button title="Test Insert" onPress={testInsert} />
     </View>
-  );
+  )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-});
