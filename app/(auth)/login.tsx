@@ -15,7 +15,7 @@ export default function LoginScreen() {
       Alert.alert('Login berhasil', '', [
         {
           text: 'OK',
-          onPress: () => router.replace('/(tabs)/index'), // Ganti dengan rute yang sesuai
+          onPress: () => router.replace({ pathname: '/(tabs)' }), // Ganti dengan rute yang sesuai
         },
       ])
     }
