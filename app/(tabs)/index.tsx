@@ -3,6 +3,11 @@ import { supabase } from '@/lib/supabase'
 import { router } from 'expo-router'
 
 export default function Home() {
+  supabase.auth.onAuthStateChange((event, session) => {
+    console.log('Auth change:', event);
+    console.log('Session:', session);
+  });
+
   const testInsert = async () => {
     const { data: { user } } = await supabase.auth.getUser();
 
