@@ -36,7 +36,7 @@ export default function LoginScreen() {
       return;
     }
     Alert.alert('Login berhasil', '', [
-      { text: 'OK', onPress: () => router.replace('/(tabs)') },
+      { text: 'OK', onPress: () => router.replace('/OnBoard/OnBoarding_A') },
     ]);
   };
 
