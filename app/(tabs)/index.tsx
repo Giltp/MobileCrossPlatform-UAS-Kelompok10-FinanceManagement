@@ -39,7 +39,7 @@ export default function Home() {
       Alert.alert('Berhasil logout', '', [
         {
           text: 'OK',
-          onPress: () => router.replace('/login'),
+          onPress: () => router.replace('/(auth)/login'),
         },
       ])
     }

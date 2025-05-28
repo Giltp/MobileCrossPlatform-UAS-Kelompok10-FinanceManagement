@@ -19,7 +19,7 @@ const OnBoard_B = () => {
           resizeMode="contain"
         />
       </View>
-      <TouchableOpacity style={styles.button} onPress={() => router.push('/login')}>
+      <TouchableOpacity style={styles.button} onPress={() => router.push('/)')}>
         <Text style={styles.buttonText}>Next</Text>
       </TouchableOpacity>
       <View style={styles.dots}>
@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 40,
   },
   title: {
-    color: '#fff', // putih agar kontras dengan background hijau
+    color: '#fff',
     fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
