@@ -1,6 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
+
 
 export default function OnBoard_A() {
   const router = useRouter();
@@ -19,9 +22,10 @@ export default function OnBoard_A() {
         />
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={() => router.push('/OnBoard/OnBoarding_B')}>
-        <Text style={styles.buttonText}>Next</Text>
+      <TouchableOpacity onPress={async () => {await AsyncStorage.setItem('hasSeenOnboarding', 'true'); router.replace('/(auth)/login');}}>
+        <Text style={styles.buttonText}>Start Using App</Text>
       </TouchableOpacity>
+
 
       <View style={styles.dots}>
         <View style={styles.activeDot} />
