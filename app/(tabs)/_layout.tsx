@@ -1,14 +1,44 @@
-import React from "react";
-import { View } from "react-native";
-import HomeScreen from "@/components/HomeScreen";
-import { useColorScheme } from "@/components/useColorScheme";
+// app/(tabs)/_layout.tsx
+import { Tabs } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <View style={{ flex: 1 }}>
-      <HomeScreen />
-    </View>
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: '#00D4AA',
+        tabBarInactiveTintColor: '#666',
+        tabBarStyle: { backgroundColor: '#fff' },
+        headerShown: false,
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="stats"
+        options={{
+          title: 'Stats',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="stats-chart" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" color={color} size={size} />
+          ),
+        }}
+      />
+    </Tabs>
   );
 }
