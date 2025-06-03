@@ -35,9 +35,6 @@ export default function LoginScreen() {
       Alert.alert('Login gagal', error.message);
       return;
     }
-    Alert.alert('Login berhasil', '', [
-      { text: 'OK', onPress: () => router.replace('/Launch/Launch_A') },
-    ]);
   };
 
   const handleGoogleLogin = async () => {
@@ -99,7 +96,7 @@ export default function LoginScreen() {
         {/* Facebook bisa ditambahkan nanti */}
         <TouchableOpacity onPress={handleGoogleLogin}>
           <Image
-            source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg' }}
+            source={require('../../assets/images/Google Logo.png')}
             style={styles.icon}
           />
         </TouchableOpacity>

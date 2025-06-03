@@ -7,33 +7,38 @@ import {
   TouchableOpacity,
   ScrollView,
   StatusBar,
-  Alert,
+  Alert
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { supabase } from "@/lib/supabase";
-import { router } from "expo-router";
+import { supabase } from '@/lib/supabase';
+import { router } from 'expo-router';
 
-export default function HomeTab() {
-  const [selectedPeriod, setSelectedPeriod] = useState<"Daily" | "Weekly" | "Monthly">("Monthly");
+const handleLogout = async () => {
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    Alert.alert('Logout gagal', error.message);
+  } else {
+    Alert.alert('Berhasil logout', '', [
+      {
+        text: 'OK',
+        onPress: () => router.replace('/login'),
+      },
+    ]);
+  }
+};
 
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      Alert.alert("Logout gagal", error.message);
-    } else {
-      Alert.alert("Berhasil logout", "", [
-        {
-          text: "OK",
-          onPress: () => router.replace("/login"),
-        },
-      ]);
-    }
-  };
+const HomeScreen: React.FC = () => {
+  const [selectedPeriod, setSelectedPeriod] = useState<
+    "Daily" | "Weekly" | "Monthly"
+  >("Monthly");
 
   const renderPeriodButton = (period: "Daily" | "Weekly" | "Monthly") => (
     <TouchableOpacity
       key={period}
-      style={[styles.periodButton, selectedPeriod === period && styles.selectedPeriodButton]}
+      style={[
+        styles.periodButton,
+        selectedPeriod === period && styles.selectedPeriodButton,
+      ]}
       onPress={() => setSelectedPeriod(period)}
     >
       <Text
@@ -117,7 +122,9 @@ export default function HomeTab() {
             </View>
             <Text style={styles.progressAmount}>$20,000.00</Text>
           </View>
-          <Text style={styles.progressText}>30% Of Your Expenses, Looks Good.</Text>
+          <Text style={styles.progressText}>
+            30% Of Your Expenses, Looks Good.
+          </Text>
         </View>
 
         <View style={styles.savingsCard}>
@@ -140,7 +147,9 @@ export default function HomeTab() {
                 <Ionicons name="restaurant" size={16} color="#FF9800" />
                 <Text style={styles.savingsItemTitle}>Food Last Week</Text>
               </View>
-              <Text style={[styles.savingsItemAmount, { color: "#FF9800" }]}>- $100.00</Text>
+              <Text style={[styles.savingsItemAmount, { color: "#FF9800" }]}>
+                -$100.00
+              </Text>
             </View>
           </View>
         </View>
@@ -152,17 +161,57 @@ export default function HomeTab() {
         </View>
 
         <View style={styles.expenseList}>
-          {renderExpenseItem("card", "Salary", "18:27 - April 30", "Monthly", "$4,000.00", true)}
-          {renderExpenseItem("basket", "Groceries", "17:00 - April 24", "Pantry", "-$100.00")}
-          {renderExpenseItem("home", "Rent", "8:30 - April 15", "Rent", "-$674.40")}
+          {renderExpenseItem(
+            "card",
+            "Salary",
+            "18:27 - April 30",
+            "Monthly",
+            "$4,000.00",
+            true
+          )}
+          {renderExpenseItem(
+            "basket",
+            "Groceries",
+            "17:00 - April 24",
+            "Pantry",
+            "-$100.00"
+          )}
+          {renderExpenseItem(
+            "home",
+            "Rent",
+            "8:30 - April 15",
+            "Rent",
+            "-$674.40"
+          )}
         </View>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+
       </ScrollView>
+
+      <View style={styles.bottomNav}>
+        <TouchableOpacity style={[styles.navItem, styles.activeNavItem]}>
+          <Ionicons name="home" size={24} color="#00D4AA" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem}>
+          <Ionicons name="stats-chart" size={24} color="#666" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem}>
+          <Ionicons name="swap-horizontal" size={24} color="#666" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem}>
+          <Ionicons name="layers" size={24} color="#666" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem}>
+          <Ionicons name="person" size={24} color="#666" />
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  // Salin semua style dari HomeScreen di sini
   container: {
     flex: 1,
     backgroundColor: "#00D4AA",
@@ -375,4 +424,36 @@ const styles = StyleSheet.create({
     color: "#666",
     marginBottom: 2,
   },
+  bottomNav: {
+    flexDirection: "row",
+    backgroundColor: "white",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    justifyContent: "space-around",
+    borderTopWidth: 1,
+    borderTopColor: "#F0F0F0",
+  },
+  navItem: {
+    padding: 8,
+  },
+  activeNavItem: {
+    backgroundColor: "#E8F5E8",
+    borderRadius: 12,
+  },
+  logoutButton: {
+  backgroundColor: '#FF4D4D',
+  marginHorizontal: 20,
+  borderRadius: 12,
+  paddingVertical: 14,
+  alignItems: 'center',
+  marginBottom: 16,
+},
+logoutText: {
+  color: 'white',
+  fontWeight: 'bold',
+  fontSize: 16,
+},
+
 });
+
+export default HomeScreen;
