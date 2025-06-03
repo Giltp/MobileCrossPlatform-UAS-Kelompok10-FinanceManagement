@@ -35,9 +35,6 @@ export default function LoginScreen() {
       Alert.alert('Login gagal', error.message);
       return;
     }
-    Alert.alert('Login berhasil', '', [
-      { text: 'OK', onPress: () => router.replace('/OnBoard/OnBoarding_A') },
-    ]);
   };
 
   const handleGoogleLogin = async () => {

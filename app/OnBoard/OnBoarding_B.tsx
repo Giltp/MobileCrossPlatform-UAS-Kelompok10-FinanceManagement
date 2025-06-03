@@ -1,9 +1,10 @@
+// app/OnBoard/OnBoarding_B.tsx
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
 
-const OnBoard_B = () => {
-  const router = useRouter();
+export default function OnBoard_B() {
 
   return (
     <View style={styles.container}>
@@ -14,13 +15,13 @@ const OnBoard_B = () => {
       </View>
       <View style={styles.imageContainer}>
         <Image
-          source={require('assets/images/OnBoard_B.png')}
+          source={require('@/assets/images/OnBoard_B.png')}
           style={styles.image}
           resizeMode="contain"
         />
       </View>
-      <TouchableOpacity style={styles.button} onPress={() => router.push('/login')}>
-        <Text style={styles.buttonText}>Next</Text>
+      <TouchableOpacity style={styles.button} onPress={() => router.replace('/(auth)/login')}>
+        <Text style={styles.buttonText}>Start Using App</Text>
       </TouchableOpacity>
       <View style={styles.dots}>
         <View style={styles.inactiveDot} />
@@ -28,9 +29,9 @@ const OnBoard_B = () => {
       </View>
     </View>
   );
-};
+}
 
-export default OnBoard_B;
+// ...styles tetap sama
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },

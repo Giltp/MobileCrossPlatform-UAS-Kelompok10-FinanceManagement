@@ -1,30 +1,43 @@
-import { useEffect } from 'react';
-import { View, ActivityIndicator } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router } from 'expo-router';
-import { supabase } from '@/lib/supabase';
+// app/index.tsx & Splash Screen
+import { useEffect, useState } from 'react';
+import { View, Image, StyleSheet } from 'react-native';
+import { Redirect } from 'expo-router';
 
 export default function Index() {
+  const [showSplash, setShowSplash] = useState(true);
+
   useEffect(() => {
-    const initialize = async () => {
-      const hasSeenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
-      const { data: { session } } = await supabase.auth.getSession();
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 5000); // ⏳ Splash selama 5 detik
 
-      if (!hasSeenOnboarding) {
-        router.replace('/');// Pergi ke launch screen
-      } else if (!session) {
-        router.replace('/(auth)/login'); // Belum login
-      } else {
-        router.replace('/(tabs)'); // Sudah login
-      }
-    };
-
-    initialize();
+    return () => clearTimeout(timer);
   }, []);
 
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <ActivityIndicator size="large" />
-    </View>
-  );
+  if (showSplash) {
+    return (
+      <View style={styles.container}>
+        <Image
+          source={require('@/assets/images/logo launch.jpeg')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </View>
+    );
+  }
+
+  return <Redirect href="/OnBoard/OnBoarding_A" />;
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#00D4AA',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logo: {
+    width: 160,
+    height: 160,
+  },
+});
