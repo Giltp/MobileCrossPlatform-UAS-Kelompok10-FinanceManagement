@@ -16,7 +16,7 @@ import * as WebBrowser from 'expo-web-browser';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const redirectTo = 'https://auth.expo.io/@giltpp/MobileCrossPlatform-UAS-Kelompok10-FinanceManagement';
+  const redirectTo = 'https://auth.expo.io/@giltpp/MobileCrossPlatform-UAS-Kelompok7-FinanceManagement';
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
