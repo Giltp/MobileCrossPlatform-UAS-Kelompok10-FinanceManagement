@@ -1,9 +1,10 @@
-// app/OnBoard/OnBoarding_A.tsx
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 
 export default function OnBoard_A() {
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
       <View style={styles.topSection}>
@@ -12,13 +13,13 @@ export default function OnBoard_A() {
 
       <View style={styles.imageContainer}>
         <Image
-          source={require('@/assets/images/OnBoard_A.png')}
+          source={require('assets/images/OnBoard_A.png')}
           style={styles.image}
           resizeMode="contain"
         />
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={() => router.replace('/OnBoard/OnBoarding_B')}>
+      <TouchableOpacity style={styles.button} onPress={() => router.push('/OnBoard/OnBoarding_B')}>
         <Text style={styles.buttonText}>Next</Text>
       </TouchableOpacity>
 
@@ -29,9 +30,6 @@ export default function OnBoard_A() {
     </View>
   );
 }
-
-// ...styles tetap sama
-
 
 const styles = StyleSheet.create({
   container: {

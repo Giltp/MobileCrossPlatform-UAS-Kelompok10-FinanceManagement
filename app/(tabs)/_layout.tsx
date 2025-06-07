@@ -1,6 +1,6 @@
 // app/(tabs)/_layout.tsx
 import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   return (
@@ -35,7 +35,16 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" color={color} size={size} />
+            <MaterialIcons name="person" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="category"
+        options={{
+          title: 'Category',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="category" color={color} size={size} />
           ),
         }}
       />
