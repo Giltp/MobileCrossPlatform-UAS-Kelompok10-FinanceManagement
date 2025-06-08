@@ -7,8 +7,25 @@ import {
   TouchableOpacity,
   ScrollView,
   StatusBar,
+  Alert
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { supabase } from '@/lib/supabase';
+import { router } from 'expo-router';
+
+const handleLogout = async () => {
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    Alert.alert('Logout gagal', error.message);
+  } else {
+    Alert.alert('Berhasil logout', '', [
+      {
+        text: 'OK',
+        onPress: () => router.replace('/login'),
+      },
+    ]);
+  }
+};
 
 const HomeScreen: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<
@@ -167,6 +184,10 @@ const HomeScreen: React.FC = () => {
             "-$674.40"
           )}
         </View>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+
       </ScrollView>
 
       <View style={styles.bottomNav}>
@@ -419,6 +440,20 @@ const styles = StyleSheet.create({
     backgroundColor: "#E8F5E8",
     borderRadius: 12,
   },
+  logoutButton: {
+  backgroundColor: '#FF4D4D',
+  marginHorizontal: 20,
+  borderRadius: 12,
+  paddingVertical: 14,
+  alignItems: 'center',
+  marginBottom: 16,
+},
+logoutText: {
+  color: 'white',
+  fontWeight: 'bold',
+  fontSize: 16,
+},
+
 });
 
 export default HomeScreen;

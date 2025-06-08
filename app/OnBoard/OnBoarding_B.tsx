@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 40,
   },
   title: {
-    color: '#fff', // putih agar kontras dengan background hijau
+    color: '#fff', 
     fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',

@@ -1,49 +1,99 @@
 import { useState } from 'react';
-import { View, TextInput, Text, Alert, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import { supabase } from '@/lib/supabase';
-import { Link, router } from 'expo-router';
+import { useRouter } from 'expo-router';
 
 export default function RegisterScreen() {
+  const router = useRouter();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      Alert.alert('Register Error', error.message);
+    if (!email || !password || !confirmPassword) {
+      Alert.alert('Error', 'Please fill in all fields');
       return;
     }
-    Alert.alert('Success', 'Please check your email to confirm account.');
+
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+
+    setLoading(true);
+
+    const { error } = await supabase.auth.signUp({ email, password });
+
+    if (error) {
+      Alert.alert('Register Error', error.message);
+    } else {
+      Alert.alert('Success', 'Please check your email to confirm your account.', [
+        { text: 'OK', onPress: () => router.replace('/login') },
+      ]);
+    }
+
+    setLoading(false);
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Create Account</Text>
-      {/* You can expand to include FullName, DOB, etc. */}
+
       <TextInput
+        placeholder="Email"
         style={styles.input}
-        placeholder="example@example.com"
-        placeholderTextColor="#999"
+        keyboardType="email-address"
         autoCapitalize="none"
         value={email}
         onChangeText={setEmail}
       />
       <TextInput
-        style={styles.input}
-        placeholder="••••••••"
-        placeholderTextColor="#999"
+        placeholder="Password"
         secureTextEntry
+        style={styles.input}
         value={password}
         onChangeText={setPassword}
       />
-      <TouchableOpacity style={styles.signupButton} onPress={handleRegister}>
-        <Text style={styles.signupButtonText}>Sign Up</Text>
+      <TextInput
+        placeholder="Confirm Password"
+        secureTextEntry
+        style={styles.input}
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+      />
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleRegister}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Sign Up</Text>
+        )}
       </TouchableOpacity>
-      <Text style={styles.footer}>
+
+      <Text style={styles.bottomText}>
         Already have an account?{' '}
-        <Link href="/login">
-          <Text style={{ color: 'blue' }}>Log In</Text>
-        </Link>
+        <Text style={styles.link} onPress={() => router.replace('/login')}>
+          Log In
+        </Text>
       </Text>
     </View>
   );
@@ -52,38 +102,47 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
+    padding: 20,
     justifyContent: 'center',
-    backgroundColor: '#ECFFF5',
+    backgroundColor: '#EFFFFA',
   },
   title: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 30,
+    color: '#00C9A7',
+    marginBottom: 20,
+    alignSelf: 'center',
   },
   input: {
-    backgroundColor: '#E0F2E9',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#00C9A7',
+    borderRadius: 8,
+    padding: 10,
+    marginVertical: 6,
+    backgroundColor: '#FFF',
     fontSize: 16,
   },
-  signupButton: {
-    backgroundColor: '#00D17E',
+  button: {
+    backgroundColor: '#00C9A7',
     paddingVertical: 14,
-    borderRadius: 20,
-    alignItems: 'center',
+    borderRadius: 30,
     marginTop: 10,
+    alignItems: 'center',
   },
-  signupButtonText: {
+  buttonText: {
     color: '#fff',
-    fontSize: 16,
     fontWeight: 'bold',
+    fontSize: 16,
   },
-  footer: {
-    textAlign: 'center',
+  bottomText: {
     marginTop: 20,
+    fontSize: 14,
+    color: '#555',
+    textAlign: 'center',
+  },
+  link: {
+    color: '#00C9A7',
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
   },
 });
