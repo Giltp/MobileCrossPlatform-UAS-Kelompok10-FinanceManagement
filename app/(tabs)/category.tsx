@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-import { FontAwesome5, MaterialIcons, Entypo, Octicons} from '@expo/vector-icons';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 const categories = [
   { name: 'Food', icon: <FontAwesome5 name="utensils" size={24} color="#fff" /> },
@@ -8,19 +9,19 @@ const categories = [
   { name: 'Medicine', icon: <FontAwesome5 name="pills" size={24} color="#fff" /> },
   { name: 'Groceries', icon: <MaterialIcons name="local-grocery-store" size={24} color="#fff" /> },
   { name: 'Rent', icon: <FontAwesome5 name="key" size={24} color="#fff" /> },
-  { name: 'Gifts', icon: <Octicons name="gift" size={24} color="white" /> },
   { name: 'Savings', icon: <FontAwesome5 name="piggy-bank" size={24} color="#fff" /> },
-  { name: 'Entertainment', icon: <MaterialIcons name="movie" size={24} color="#fff" /> },
-  { name: 'More', icon: <Entypo name="dots-three-horizontal" size={24} color="#fff" /> },
+  //{ name: 'Gifts', icon: <Octicons name="gift" size={24} color="white" /> },
+  //{ name: 'Entertainment', icon: <MaterialIcons name="movie" size={24} color="#fff" /> },
+  //{ name: 'More', icon: <Entypo name="dots-three-horizontal" size={24} color="#fff" /> },
 ];
 
-export default function CategoryScreen() {
+export default function Category() {
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerText}>Categories</Text>
-
         <View style={styles.balanceContainer}>
           <View style={styles.balanceBox}>
             <Text style={styles.label}>Total Balance</Text>
@@ -42,10 +43,13 @@ export default function CategoryScreen() {
         <Text style={styles.note}>✅ 30% Of Your Expenses, Looks Good.</Text>
       </View>
 
-      {/* Categories */}
       <View style={styles.grid}>
         {categories.map((item, index) => (
-          <TouchableOpacity key={index} style={styles.categoryBox}>
+          <TouchableOpacity
+            key={index}
+            style={styles.categoryBox}
+            onPress={() => router.push(`/Category/${item.name}`)}
+          >
             <View style={styles.iconContainer}>{item.icon}</View>
             <Text style={styles.categoryText}>{item.name}</Text>
           </TouchableOpacity>
