@@ -20,15 +20,6 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const redirectTo = 'https://auth.expo.io/@giltpp/MobileCrossPlatform-UAS-Kelompok7-FinanceManagement';
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        router.replace('/(tabs)');
-      }
-    });
-  }, []);
-
-
   const handleLogin = async () => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
@@ -39,6 +30,9 @@ export default function LoginScreen() {
     // ✅ Simpan email & password untuk fingerprint
     await SecureStore.setItemAsync('email', email);
     await SecureStore.setItemAsync('password', password);
+
+    // ✅ Arahkan ke home (tabs)
+    router.replace('/(tabs)');
   };
 
   const handleFingerprintLogin = async () => {
