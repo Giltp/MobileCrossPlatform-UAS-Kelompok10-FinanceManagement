@@ -12,28 +12,65 @@ import { supabase } from '@/lib/supabase';
 import { Link, router } from 'expo-router';
 import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
+import * as SecureStore from 'expo-secure-store';
+import * as LocalAuthentication from 'expo-local-authentication';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const redirectTo = 'https://auth.expo.io/@giltpp/MobileCrossPlatform-UAS-Kelompok7-FinanceManagement';
 
-  useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        router.replace('/(tabs)');
-      }
-    });
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, []);
-
   const handleLogin = async () => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       Alert.alert('Login gagal', error.message);
       return;
+    }
+
+    // ✅ Simpan email & password untuk fingerprint
+    await SecureStore.setItemAsync('email', email);
+    await SecureStore.setItemAsync('password', password);
+
+    // ✅ Arahkan ke home (tabs)
+    router.replace('/(tabs)');
+  };
+
+  const handleFingerprintLogin = async () => {
+    const hasHardware = await LocalAuthentication.hasHardwareAsync();
+    const supported = await LocalAuthentication.supportedAuthenticationTypesAsync();
+    const enrolled = await LocalAuthentication.isEnrolledAsync();
+
+    if (!hasHardware || !enrolled) {
+      Alert.alert('Error', 'Fingerprint is not available or set up on this device.');
+      return;
+    }
+
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage: 'Login with fingerprint',
+    });
+
+    if (!result.success) {
+      Alert.alert('Auth failed', 'Fingerprint authentication failed.');
+      return;
+    }
+
+    const storedEmail = await SecureStore.getItemAsync('email');
+    const storedPassword = await SecureStore.getItemAsync('password');
+
+    if (!storedEmail || !storedPassword) {
+      Alert.alert('Missing credentials', 'Email/password not saved.');
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: storedEmail,
+      password: storedPassword,
+    });
+
+    if (error) {
+      Alert.alert('Login Error', error.message);
+    } else {
+      router.replace('/(tabs)');
     }
   };
 
@@ -84,13 +121,11 @@ export default function LoginScreen() {
       <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
         <Text style={styles.loginButtonText}>Log In</Text>
       </TouchableOpacity>
-      <Text style={styles.forgotText}>Forgot Password?</Text>
-      <TouchableOpacity style={styles.signupButton} onPress={() => router.push('/register')}>
-        <Text style={styles.signupButtonText}>Sign Up</Text>
+      <TouchableOpacity onPress={handleFingerprintLogin}>
+        <Text style={styles.fingerprintText}>
+          Use <Text style={{ color: 'blue' }}>Fingerprint</Text> To Access
+        </Text>
       </TouchableOpacity>
-      <Text style={styles.fingerprintText}>
-        Use <Text style={{ color: 'blue' }}>Fingerprint</Text> To Access
-      </Text>
       <Text style={styles.orText}>or sign up with</Text>
       <View style={styles.socialIcons}>
         {/* Facebook bisa ditambahkan nanti */}
