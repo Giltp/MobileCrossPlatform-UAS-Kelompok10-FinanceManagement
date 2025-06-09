@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,23 +12,61 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "@/lib/supabase";
 import { router } from "expo-router";
+import dayjs from 'dayjs';
 
 export default function HomeTab() {
   const [selectedPeriod, setSelectedPeriod] = useState<"Daily" | "Weekly" | "Monthly">("Monthly");
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [balance, setBalance] = useState(0);
+  const [totalExpense, setTotalExpense] = useState(0);
+  const [userName, setUserName] = useState('');
 
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      Alert.alert("Logout gagal", error.message);
-    } else {
-      Alert.alert("Berhasil logout", "", [
-        {
-          text: "OK",
-          onPress: () => router.replace("/login"),
-        },
-      ]);
-    }
-  };
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('❌ Error fetching transactions:', error.message);
+      } else {
+        setTransactions(data);
+      }
+    };
+
+    fetchTransactions();
+  }, []);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserName(user.user_metadata?.username || '');
+      }
+    };
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    let income = 0;
+    let expense = 0;
+
+    transactions.forEach((t) => {
+      if (t.type === 'income') {
+        income += Number(t.amount);
+      } else if (t.type === 'expense') {
+        expense += Number(t.amount);
+      }
+    });
+
+    setBalance(income - expense);
+    setTotalExpense(expense);
+  }, [transactions]);
 
   const renderPeriodButton = (period: "Daily" | "Weekly" | "Monthly") => (
     <TouchableOpacity
@@ -46,6 +84,21 @@ export default function HomeTab() {
       </Text>
     </TouchableOpacity>
   );
+
+  const filteredTransactions = transactions.filter((tx) => {
+    const date = dayjs(tx.created_at);
+
+    if (selectedPeriod === 'Daily') {
+      return date.isSame(dayjs(), 'day');
+    }
+    if (selectedPeriod === 'Weekly') {
+      return date.isAfter(dayjs().subtract(7, 'day'));
+    }
+    if (selectedPeriod === 'Monthly') {
+      return date.isSame(dayjs(), 'month');
+    }
+    return true;
+  });
 
   const renderExpenseItem = (
     icon: string,
@@ -84,13 +137,17 @@ export default function HomeTab() {
     </View>
   );
 
+  const expensePercent = balance === 0 ? 0 : ((totalExpense / 20000) * 100).toFixed(1);
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#00D4AA" barStyle="light-content" />
 
       <View style={styles.header}>
         <View>
-          <Text style={styles.welcomeText}>Hi, Welcome Back</Text>
+          <Text style={styles.welcomeText}>
+            Hi, Welcome Back{userName ? `, ${userName}` : ''}
+          </Text>
           <Text style={styles.goodMorning}>Good Morning</Text>
         </View>
         <TouchableOpacity style={styles.notificationButton}>
@@ -103,22 +160,24 @@ export default function HomeTab() {
           <View style={styles.balanceRow}>
             <View style={styles.balanceItem}>
               <Text style={styles.balanceLabel}>💰 Total Balance</Text>
-              <Text style={styles.balanceAmount}>$7,783.00</Text>
+              <Text style={styles.balanceAmount}>${balance.toFixed(2)}</Text>
             </View>
             <View style={styles.balanceItem}>
               <Text style={styles.expenseLabel}>💸 Total Expense</Text>
-              <Text style={styles.expenseAmount}>$1,187.40</Text>
+              <Text style={styles.expenseAmount}>${totalExpense.toFixed(2)}</Text>
             </View>
           </View>
 
           <View style={styles.progressContainer}>
             <View style={styles.progressBar}>
-              <View style={styles.progressFill} />
+              <View style={[styles.progressFill, { width: `${expensePercent}%` as unknown as number | `${number}%` }]} />
             </View>
             <Text style={styles.progressAmount}>$20,000.00</Text>
+            </View>
+            <Text style={styles.progressText}>
+              {expensePercent}% Of Your Expenses, {Number(expensePercent) < 50 ? "Looks Good" : "Be Careful"}.
+            </Text>
           </View>
-          <Text style={styles.progressText}>30% Of Your Expenses, Looks Good.</Text>
-        </View>
 
         <View style={styles.savingsCard}>
           <View style={styles.savingsLeft}>
@@ -152,10 +211,22 @@ export default function HomeTab() {
         </View>
 
         <View style={styles.expenseList}>
-          {renderExpenseItem("card", "Salary", "18:27 - April 30", "Monthly", "$4,000.00", true)}
-          {renderExpenseItem("basket", "Groceries", "17:00 - April 24", "Pantry", "-$100.00")}
-          {renderExpenseItem("home", "Rent", "8:30 - April 15", "Rent", "-$674.40")}
+          {filteredTransactions
+            .slice(0, 3)
+            .map((item) => (
+              <View key={item.id}>
+                {renderExpenseItem(
+                  item.icon || 'card',
+                  item.title,
+                  new Date(item.created_at).toLocaleString(),
+                  item.category,
+                  `${item.type === 'expense' ? '-' : ''}$${Number(item.amount).toFixed(2)}`,
+                  item.type === 'income'
+                )}
+              </View>
+            ))}
         </View>
+
       </ScrollView>
     </SafeAreaView>
   );
