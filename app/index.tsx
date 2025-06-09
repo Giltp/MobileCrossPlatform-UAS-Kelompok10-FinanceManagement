@@ -1,43 +1,41 @@
-// app/index.tsx & Splash Screen
-import { useEffect, useState } from 'react';
-import { View, Image, StyleSheet } from 'react-native';
-import { Redirect } from 'expo-router';
+import React, { useEffect } from 'react';
+import { View, Image, Text, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
 
-export default function Index() {
-  const [showSplash, setShowSplash] = useState(true);
+export default function index() {
+  const router = useRouter();
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 5000); // ⏳ Splash selama 5 detik
+      router.push('/OnBoard/OnBoarding_A');
+    }, 3000); // ⏳ Tunggu 3 detik sebelum redirect
 
     return () => clearTimeout(timer);
   }, []);
 
-  if (showSplash) {
-    return (
-      <View style={styles.container}>
-        <Image
-          source={require('@/assets/images/logo launch.jpeg')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-      </View>
-    );
-  }
-
-  return <Redirect href="/OnBoard/OnBoarding_A" />;
+  return (
+    <View style={styles.container}>
+      <Image source={require('assets/images/Launch.png')} style={styles.logo} />
+      <Text style={styles.title}>FinWise</Text>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#00D4AA',
+    backgroundColor: '#00C9A7',
     justifyContent: 'center',
     alignItems: 'center',
   },
   logo: {
-    width: 160,
-    height: 160,
+    width: 120,
+    height: 120,
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 28,
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });

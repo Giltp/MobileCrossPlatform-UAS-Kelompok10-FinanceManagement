@@ -6,17 +6,37 @@ import {
   Alert,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { supabase } from '@/lib/supabase';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 
 export default function RegisterScreen() {
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
+    if (!email || !password || !confirmPassword || !fullName || !username) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+
+    setLoading(true);
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -24,18 +44,20 @@ export default function RegisterScreen() {
         data: {
           full_name: fullName,
           username,
-          avatar_url: '@/assets/images/Profile Placeholders.png', // default avatar
+          avatar_url: '@/assets/images/Profile Placeholders.png',
         },
       },
     });
 
+    setLoading(false);
+
     if (error) {
       Alert.alert('Register Error', error.message);
-      return;
+    } else {
+      Alert.alert('Success', 'Please check your email to confirm account.', [
+        { text: 'OK', onPress: () => router.replace('/(auth)/login') },
+      ]);
     }
-
-    Alert.alert('Success', 'Please check your email to confirm account.');
-    router.replace('/(auth)/login');
   };
 
   return (
@@ -58,31 +80,43 @@ export default function RegisterScreen() {
       />
       <TextInput
         style={styles.input}
-        placeholder="example@example.com"
-        placeholderTextColor="#999"
-        autoCapitalize="none"
+        placeholder="Email"
         keyboardType="email-address"
+        autoCapitalize="none"
+        placeholderTextColor="#999"
         value={email}
         onChangeText={setEmail}
       />
       <TextInput
         style={styles.input}
-        placeholder="••••••••"
-        placeholderTextColor="#999"
+        placeholder="Password"
         secureTextEntry
+        placeholderTextColor="#999"
         value={password}
         onChangeText={setPassword}
       />
+      <TextInput
+        style={styles.input}
+        placeholder="Confirm Password"
+        secureTextEntry
+        placeholderTextColor="#999"
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+      />
 
-      <TouchableOpacity style={styles.signupButton} onPress={handleRegister}>
-        <Text style={styles.signupButtonText}>Sign Up</Text>
+      <TouchableOpacity style={styles.signupButton} onPress={handleRegister} disabled={loading}>
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.signupButtonText}>Sign Up</Text>
+        )}
       </TouchableOpacity>
 
       <Text style={styles.footer}>
         Already have an account?{' '}
-        <Link href="/login">
-          <Text style={{ color: 'blue' }}>Log In</Text>
-        </Link>
+        <Text style={{ color: 'blue' }} onPress={() => router.replace('/(auth)/login')}>
+          Log In
+        </Text>
       </Text>
     </View>
   );
