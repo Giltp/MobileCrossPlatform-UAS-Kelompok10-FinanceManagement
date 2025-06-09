@@ -21,15 +21,13 @@ export default function LoginScreen() {
   const redirectTo = 'https://auth.expo.io/@giltpp/MobileCrossPlatform-UAS-Kelompok7-FinanceManagement';
 
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         router.replace('/(tabs)');
       }
     });
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
   }, []);
+
 
   const handleLogin = async () => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -134,13 +132,6 @@ export default function LoginScreen() {
           Use <Text style={{ color: 'blue' }}>Fingerprint</Text> To Access
         </Text>
       </TouchableOpacity>
-      <Text style={styles.forgotText}>Forgot Password?</Text>
-      <TouchableOpacity style={styles.signupButton} onPress={() => router.push('/register')}>
-        <Text style={styles.signupButtonText}>Sign Up</Text>
-      </TouchableOpacity>
-      <Text style={styles.fingerprintText}>
-        Use <Text style={{ color: 'blue' }}>Fingerprint</Text> To Access
-      </Text>
       <Text style={styles.orText}>or sign up with</Text>
       <View style={styles.socialIcons}>
         {/* Facebook bisa ditambahkan nanti */}

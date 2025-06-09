@@ -35,7 +35,7 @@ export default function RegisterScreen() {
     }
 
     Alert.alert('Success', 'Please check your email to confirm account.');
-    router.replace('/login');
+    router.replace('/(auth)/login');
   };
 
   return (
