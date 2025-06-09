@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,36 @@ import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 
 export default function ProfileScreen() {
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        console.error('User not found', userError);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('full_name, username, avatar_url')
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+      } else {
+        setProfile({ ...data, id: user.id });
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -42,15 +72,25 @@ export default function ProfileScreen() {
       <View style={styles.content}>
         <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
           <View style={styles.profileSection}>
-            <Text style={styles.name}>John Smith</Text>
-            <Text style={styles.id}>ID: 25030024</Text>
+            <Image
+              source={
+                profile?.avatar_url
+                  ? { uri: profile.avatar_url }
+                  : require('@/assets/images/Profile Placeholders.png')
+              }
+              style={styles.avatar}
+            />
+            {profile?.full_name && (
+              <Text style={styles.fullName}>({profile.full_name})</Text>
+            )}
+            <Text style={styles.username}>{profile?.username || 'User'}</Text>
+            <Text style={styles.id}>ID: {profile?.id?.split('-')[1]?.toUpperCase() ?? '....'}</Text>
           </View>
 
+
           <View style={styles.menuList}>
-            <MenuItem icon="person-outline" label="Edit Profile" />
-            <MenuItem icon="shield-checkmark-outline" label="Security" />
-            <MenuItem icon="settings-outline" label="Setting" />
-            <MenuItem icon="help-circle-outline" label="Help" />
+            <MenuItem icon="person-outline" label="Edit Profile" onPress={() => router.push('/(profiles)/editProfiles')} />
+            <MenuItem icon="shield-checkmark-outline" label="Security" onPress={() => router.push('/(profiles)/security')}/>
             <MenuItem icon="log-out-outline" label="Logout" onPress={handleLogout} />
           </View>
         </ScrollView>
@@ -147,9 +187,14 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#222',
   },
+  fullName: {
+    fontSize: 14,
+    color: '#888',
+    marginTop: 8,
+  },
+  username: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#222',
+  },
 });
-
-//<Image
-//source={require('@/assets/images/profile-placeholder.png')}
-//style={styles.avatar}
-///>
