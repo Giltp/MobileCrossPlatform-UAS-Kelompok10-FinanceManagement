@@ -8,7 +8,8 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: '#00D4AA',
         tabBarInactiveTintColor: '#666',
-        tabBarStyle: { backgroundColor: '#fff' },
+        tabBarStyle: { backgroundColor: '#fff', height: 55 },
+        tabBarLabelStyle: { marginBottom: 4 },
         headerShown: false,
       }}
     >
@@ -27,6 +28,15 @@ export default function TabLayout() {
           title: 'Stats',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="stats-chart" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="addTransaction"
+        options={{
+          title: 'Transactions',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="add-circle" color={color} size={size} />
           ),
         }}
       />

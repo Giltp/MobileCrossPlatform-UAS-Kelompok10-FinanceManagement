@@ -31,6 +31,53 @@ export default function LoginScreen() {
     await SecureStore.setItemAsync('email', email);
     await SecureStore.setItemAsync('password', password);
 
+    // ✅ Clone default categories if needed
+    const cloneDefaultCategoriesIfNeeded = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Cek apakah user sudah punya kategori
+      const { data: existing, error: existingError } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('user_id', user.id);
+
+      if (existingError) {
+        console.error('❌ Error checking existing categories:', existingError.message);
+        return;
+      }
+
+      if (existing && existing.length === 0) {
+        // Ambil kategori global (tanpa user_id)
+        const { data: defaults, error } = await supabase
+          .from('categories')
+          .select('*')
+          .is('user_id', null);
+
+        if (error) {
+          console.error('❌ Error fetching default categories:', error.message);
+          return;
+        }
+
+        // Clone ke user
+        const categoriesToInsert = defaults.map(({ id, created_at, ...rest }) => ({
+          ...rest,
+          user_id: user.id,
+        }));
+
+        const { error: insertError } = await supabase
+          .from('categories')
+          .insert(categoriesToInsert);
+
+        if (insertError) {
+          console.error('❌ Failed to insert user categories:', insertError.message);
+        } else {
+          console.log('✅ Default categories cloned for user.');
+        }
+      }
+    };
+    await cloneDefaultCategoriesIfNeeded();
+
     // ✅ Arahkan ke home (tabs)
     router.replace('/(tabs)');
   };
