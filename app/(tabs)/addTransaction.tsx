@@ -14,12 +14,12 @@ import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
 
-const categories = ['Food', 'Transport', 'Groceries', 'Rent', 'Salary', 'Savings'];
+const allCategories = ['Food', 'Transport', 'Groceries', 'Rent', 'Salary', 'Savings'];
 
 export default function AddTransaction() {
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState(categories[0]);
+  const [category, setCategory] = useState(allCategories[0]);
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -55,6 +55,9 @@ export default function AddTransaction() {
     }
   };
 
+  // Filter categories based on type
+  const filteredCategories = type === 'income' ? ['Savings'] : allCategories.filter(cat => cat !== 'Savings');
+
   return (
     <View style={styles.container}>
       <Text style={styles.label}>Transaction Type</Text>
@@ -83,7 +86,7 @@ export default function AddTransaction() {
           onValueChange={(itemValue) => setCategory(itemValue)}
           style={styles.picker}
         >
-          {categories.map((cat) => (
+          {filteredCategories.map((cat) => (
             <Picker.Item key={cat} label={cat} value={cat} />
           ))}
         </Picker>
