@@ -173,11 +173,11 @@ export default function HomeTab() {
               <View style={[styles.progressFill, { width: `${expensePercent}%` as unknown as number | `${number}%` }]} />
             </View>
             <Text style={styles.progressAmount}>$20,000.00</Text>
-            </View>
-            <Text style={styles.progressText}>
-              {expensePercent}% Of Your Expenses, {Number(expensePercent) < 50 ? "Looks Good" : "Be Careful"}.
-            </Text>
           </View>
+          <Text style={styles.progressText}>
+            {expensePercent}% Of Your Expenses, {Number(expensePercent) < 50 ? 'Looks Good' : 'Be Careful'}.
+          </Text>
+        </View>
 
         <View style={styles.savingsCard}>
           <View style={styles.savingsLeft}>
