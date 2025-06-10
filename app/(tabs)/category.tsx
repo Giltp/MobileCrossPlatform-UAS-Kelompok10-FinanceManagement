@@ -1,22 +1,73 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-
-const categories = [
-  { name: 'Food', icon: <FontAwesome5 name="utensils" size={24} color="#fff" /> },
-  { name: 'Transport', icon: <FontAwesome5 name="bus" size={24} color="#fff" /> },
-  { name: 'Medicine', icon: <FontAwesome5 name="pills" size={24} color="#fff" /> },
-  { name: 'Groceries', icon: <MaterialIcons name="local-grocery-store" size={24} color="#fff" /> },
-  { name: 'Rent', icon: <FontAwesome5 name="key" size={24} color="#fff" /> },
-  { name: 'Savings', icon: <FontAwesome5 name="piggy-bank" size={24} color="#fff" /> },
-  //{ name: 'Gifts', icon: <Octicons name="gift" size={24} color="white" /> },
-  //{ name: 'Entertainment', icon: <MaterialIcons name="movie" size={24} color="#fff" /> },
-  //{ name: 'More', icon: <Entypo name="dots-three-horizontal" size={24} color="#fff" /> },
-];
+import { supabase } from '@/lib/supabase';
 
 export default function Category() {
   const router = useRouter();
+  const [categories, setCategories] = useState<any[]>([]);
+  const [totalIncome, setTotalIncome] = useState(0);
+  const [totalExpense, setTotalExpense] = useState(0);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('❌ Error fetching categories:', error.message);
+        Alert.alert('Error', error.message);
+      } else {
+        setCategories(data);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const fetchTotals = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('amount, type')
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('❌ Error fetching totals:', error.message);
+        return;
+      }
+
+      const income = data.filter(tx => tx.type === 'income').reduce((sum, tx) => sum + tx.amount, 0);
+      const expense = data.filter(tx => tx.type === 'expense').reduce((sum, tx) => sum + tx.amount, 0);
+
+      setTotalIncome(income);
+      setTotalExpense(expense);
+    };
+
+    fetchTotals();
+  }, []);
+
+  const budget = 20000;
+  const expensePercent = budget > 0 ? Math.round((totalExpense / budget) * 100) : 0;
+
+  const renderIcon = (icon: string, family: string) => {
+    switch (family) {
+      case 'MaterialIcons':
+        return <MaterialIcons name={icon as any} size={24} color="#fff" />;
+      case 'FontAwesome5':
+      default:
+        return <FontAwesome5 name={icon as any} size={24} color="#fff" />;
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -25,35 +76,44 @@ export default function Category() {
         <View style={styles.balanceContainer}>
           <View style={styles.balanceBox}>
             <Text style={styles.label}>Total Balance</Text>
-            <Text style={styles.balance}>$7,783.00</Text>
+            <Text style={styles.balance}>${totalIncome.toFixed(2)}</Text>
           </View>
           <View style={styles.balanceBox}>
             <Text style={styles.label}>Total Expense</Text>
-            <Text style={styles.expense}>-$1,187.40</Text>
+            <Text style={styles.expense}>-${totalExpense.toFixed(2)}</Text>
           </View>
         </View>
 
         <View style={styles.progressContainer}>
           <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: '30%' }]} />
+            <View style={[styles.progressFill, { width: `${expensePercent}%` }]} />
           </View>
-          <Text style={styles.progressText}>$20,000.00</Text>
+          <Text style={styles.progressAmount}>${budget.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</Text>
         </View>
-
-        <Text style={styles.note}>✅ 30% Of Your Expenses, Looks Good.</Text>
+        <Text style={styles.progressText}>
+          {expensePercent}% Of Your Expenses, {expensePercent < 50 ? 'Looks Good' : 'Be Careful'}.
+        </Text>
       </View>
 
       <View style={styles.grid}>
-        {categories.map((item, index) => (
-          <TouchableOpacity
-            key={index}
-            style={styles.categoryBox}
-            onPress={() => router.push(`/Category/${item.name}`)}
-          >
-            <View style={styles.iconContainer}>{item.icon}</View>
-            <Text style={styles.categoryText}>{item.name}</Text>
-          </TouchableOpacity>
-        ))}
+        {categories.length === 0 ? (
+          <Text style={{ textAlign: 'center', marginTop: 20, color: '#999', width: '100%' }}>
+            No categories yet.
+          </Text>
+        ) : (
+          categories.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              style={styles.categoryBox}
+              onPress={() => router.push({ pathname: '/Category/[category]', params: { category: item.name } })}
+            >
+              <View style={styles.iconContainer}>
+                {renderIcon(item.icon, item.icon_family)}
+              </View>
+              <Text style={styles.categoryText}>{item.name}</Text>
+            </TouchableOpacity>
+          ))
+        )}
       </View>
     </View>
   );
@@ -114,6 +174,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
   progressText: {
+    textAlign: 'right',
+    color: '#fff',
+    fontSize: 12,
+    marginTop: 5,
+  },
+  progressAmount: {
     textAlign: 'right',
     color: '#fff',
     fontSize: 12,

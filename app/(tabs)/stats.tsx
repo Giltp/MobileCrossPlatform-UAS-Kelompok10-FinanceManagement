@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,23 @@ import {
   StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { supabase } from '@/lib/supabase';
+import dayjs from 'dayjs';
+
+function getStartDate(timeFrame: TimeFrame) {
+  switch (timeFrame) {
+    case "Daily":
+      return dayjs().startOf("day");
+    case "Weekly":
+      return dayjs().startOf("week");
+    case "Monthly":
+      return dayjs().startOf("month");
+    case "Year":
+      return dayjs().startOf("year");
+    default:
+      return dayjs().startOf("day");
+  }
+}
 
 type TimeFrame = "Daily" | "Weekly" | "Monthly" | "Year";
 type ReportType = "Income" | "Expense";
@@ -19,16 +36,6 @@ interface ChartData {
   income: number;
   expense: number;
 }
-
-const chartData: ChartData[] = [
-  { day: "Mon", income: 2, expense: 4 },
-  { day: "Tue", income: 8, expense: 3 },
-  { day: "Wed", income: 6, expense: 7 },
-  { day: "Thu", income: 4, expense: 2 },
-  { day: "Fri", income: 9, expense: 8 },
-  { day: "Sat", income: 3, expense: 5 },
-  { day: "Sun", income: 7, expense: 6 },
-];
 
 const FinancialApp: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<"analysis" | "search">(
@@ -41,10 +48,87 @@ const FinancialApp: React.FC = () => {
   const [selectedReportType, setSelectedReportType] =
     useState<ReportType>("Expense");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [transactions, setTransactions] = useState<any[]>([]);
 
-  const maxValue = Math.max(
-    ...chartData.map((d) => Math.max(d.income, d.expense))
-  );
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const fromDate = getStartDate(selectedTimeFrame);
+
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("user_id", user.id)
+        .gte("created_at", fromDate.toISOString());
+
+      if (!error && data) {
+        setTransactions(data);
+      }
+    };
+
+    fetchData();
+  }, [selectedTimeFrame]);
+
+  const getDays = () => {
+    const today = dayjs();
+    return [...Array(7)].map((_, i) =>
+      today.subtract(6 - i, 'day').format('ddd')
+    );
+  };
+
+  
+  const chartData: ChartData[] = getDays().map((dayLabel, index) => {
+    const targetDate = dayjs().subtract(6 - index, 'day');
+
+    const dayTransactions = transactions.filter((t) =>
+      dayjs(t.created_at).isSame(targetDate, 'day')
+    );
+
+    const income = dayTransactions
+      .filter((t) => t.type === 'income')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const expense = dayTransactions
+      .filter((t) => t.type === 'expense')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    return { day: dayLabel, income, expense };
+  });
+
+  const maxValue = Math.max(...chartData.map(d => Math.max(d.income, d.expense)));
+
+  const totalIncome = transactions
+    .filter((t) => t.type === 'income')
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const totalExpense = transactions
+    .filter((t) => t.type === 'expense')
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const balance = totalIncome - totalExpense;
+  const percentExpense = ((totalExpense / 20000) * 100).toFixed(0); // asumsi target $20k
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('❌ Error:', error.message);
+      } else {
+        setTransactions(data);
+      }
+    };
+
+    fetchTransactions();
+  }, []);
 
   const AnalysisScreen = () => (
     <SafeAreaView style={styles.container}>
@@ -70,23 +154,23 @@ const FinancialApp: React.FC = () => {
                 <View style={styles.greenDot} />
                 <Text style={styles.balanceText}>Total Balance</Text>
               </View>
-              <Text style={styles.balanceAmount}>$7,783.00</Text>
+              <Text style={styles.balanceAmount}>${balance.toFixed(2)}</Text>
             </View>
             <View>
               <View style={styles.balanceLabel}>
                 <View style={styles.blueDot} />
                 <Text style={styles.balanceText}>Total Expenses</Text>
               </View>
-              <Text style={styles.expenseAmount}>-$1,187.40</Text>
+              <Text style={styles.expenseAmount}>-${totalExpense.toFixed(2)}</Text>
             </View>
           </View>
 
           {/* Progress Bar */}
           <View style={styles.progressContainer}>
             <View style={styles.progressBar}>
-              <View style={styles.progressFill} />
+              <View style={[styles.progressFill, { width: `${percentExpense}%` as unknown as number | `${number}%` }]} />
             </View>
-            <Text style={styles.progressText}>30%</Text>
+            <Text style={styles.progressText}>{percentExpense}%</Text>
             <Text style={styles.progressAmount}>$20,000.00</Text>
           </View>
 
@@ -95,7 +179,7 @@ const FinancialApp: React.FC = () => {
               <Ionicons name="checkmark" size={12} color="white" />
             </View>
             <Text style={styles.goodText}>
-              30% Of Your Expenses, Looks Good
+              {percentExpense}% Of Your Expenses, {Number(percentExpense) < 50 ? 'Looks Good' : 'Be Careful'}
             </Text>
           </View>
         </View>
@@ -181,14 +265,14 @@ const FinancialApp: React.FC = () => {
               <Ionicons name="trending-up" size={20} color="#10B981" />
             </View>
             <Text style={styles.summaryLabel}>Income</Text>
-            <Text style={styles.summaryAmount}>$4,120.00</Text>
+            <Text style={styles.summaryAmount}>${totalIncome.toFixed(2)}</Text>
           </View>
           <View style={styles.summaryItem}>
             <View style={styles.summaryIcon}>
               <Ionicons name="trending-down" size={20} color="#3B82F6" />
             </View>
             <Text style={styles.summaryLabel}>Expense</Text>
-            <Text style={styles.summaryAmountBlue}>$1,187.40</Text>
+            <Text style={styles.summaryAmountBlue}>${totalExpense.toFixed(2)}</Text>
           </View>
         </View>
       </ScrollView>
