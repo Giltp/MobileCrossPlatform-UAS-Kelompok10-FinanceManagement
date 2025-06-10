@@ -14,7 +14,14 @@ import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
 
-const allCategories = ['Food', 'Transport', 'Groceries', 'Rent', 'Salary', 'Savings'];
+const allCategories = [
+  'Food',
+  'Transport',
+  'Groceries',
+  'Rent',
+  'Salary',
+  'Savings',
+];
 
 export default function AddTransaction() {
   const [type, setType] = useState<'income' | 'expense'>('expense');
@@ -24,20 +31,25 @@ export default function AddTransaction() {
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const handleSubmit = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+  // Filter categories based on transaction type
+  const filteredCategories =
+    type === 'income'
+      ? ['Savings']
+      : allCategories.filter((cat) => cat !== 'Savings');
 
+  const handleSubmit = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       Alert.alert('Error', 'User not logged in');
       return;
     }
-
     const numericAmount = parseFloat(amount);
     if (isNaN(numericAmount) || numericAmount <= 0) {
       Alert.alert('Error', 'Please enter a valid amount');
       return;
     }
-
     const { error } = await supabase.from('transactions').insert({
       user_id: user.id,
       type,
@@ -46,17 +58,13 @@ export default function AddTransaction() {
       amount: numericAmount,
       date: date.toISOString(),
     });
-
     if (error) {
       Alert.alert('Insert Failed', error.message);
     } else {
       Alert.alert('Success', 'Transaction added successfully');
-      router.back(); // go back to home or previous screen
+      router.back();
     }
   };
-
-  // Filter categories based on type
-  const filteredCategories = type === 'income' ? ['Savings'] : allCategories.filter(cat => cat !== 'Savings');
 
   return (
     <View style={styles.container}>
@@ -64,26 +72,37 @@ export default function AddTransaction() {
       <View style={styles.switchContainer}>
         <TouchableOpacity
           style={[styles.typeButton, type === 'income' && styles.activeType]}
-          onPress={() => setType('income')}
+          onPress={() => {
+            setType('income');
+            setCategory('Savings');
+          }}
         >
           <Text style={styles.typeText}>Income</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.typeButton, type === 'expense' && styles.activeType]}
-          onPress={() => setType('expense')}
+          onPress={() => {
+            setType('expense');
+            setCategory(filteredCategories[0]);
+          }}
         >
           <Text style={styles.typeText}>Expense</Text>
         </TouchableOpacity>
       </View>
 
       <Text style={styles.label}>Title</Text>
-      <TextInput style={styles.input} value={title} onChangeText={setTitle} placeholder="e.g. Groceries" />
+      <TextInput
+        style={styles.input}
+        value={title}
+        onChangeText={setTitle}
+        placeholder="e.g. Groceries"
+      />
 
       <Text style={styles.label}>Category</Text>
       <View style={styles.pickerWrapper}>
         <Picker
           selectedValue={category}
-          onValueChange={(itemValue) => setCategory(itemValue)}
+          onValueChange={setCategory}
           style={styles.picker}
         >
           {filteredCategories.map((cat) => (

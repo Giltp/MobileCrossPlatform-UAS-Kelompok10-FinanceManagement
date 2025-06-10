@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function CategoryDetailScreen() {
   const { category } = useLocalSearchParams<{ category: string }>();
@@ -54,8 +55,9 @@ export default function CategoryDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => router.replace('/(tabs)/category')} style={{ marginBottom: 16 }}>
-        <Text style={{ color: '#00C9A7' }}>{'← Back to Categories'}</Text>
+      <TouchableOpacity onPress={() => router.replace('/(tabs)/category')} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+        <Ionicons name="arrow-back" size={20} color="#00C9A7" style={{ marginRight: 6 }} />
+        <Text style={{ color: '#00C9A7' }}>{'Back to Categories'}</Text>
       </TouchableOpacity>
       <Text style={styles.header}>{category} Expenses</Text>
       <Text style={styles.total}>
