@@ -173,7 +173,6 @@ const FinancialApp: React.FC = () => {
             <Text style={styles.progressText}>{percentExpense}%</Text>
             <Text style={styles.progressAmount}>$20,000.00</Text>
           </View>
-
           <View style={styles.goodLabel}>
             <View style={styles.checkIcon}>
               <Ionicons name="checkmark" size={12} color="white" />

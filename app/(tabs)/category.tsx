@@ -83,18 +83,18 @@ export default function Category() {
             <Text style={styles.expense}>-${totalExpense.toFixed(2)}</Text>
           </View>
         </View>
-
         <View style={styles.progressContainer}>
           <View style={styles.progressBar}>
             <View style={[styles.progressFill, { width: `${expensePercent}%` }]} />
           </View>
-          <Text style={styles.progressAmount}>${budget.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</Text>
+          <Text style={styles.progressAmount}>
+            ${budget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </Text>
         </View>
         <Text style={styles.progressText}>
           {expensePercent}% Of Your Expenses, {expensePercent < 50 ? 'Looks Good' : 'Be Careful'}.
         </Text>
       </View>
-
       <View style={styles.grid}>
         {categories.length === 0 ? (
           <Text style={{ textAlign: 'center', marginTop: 20, color: '#999', width: '100%' }}>

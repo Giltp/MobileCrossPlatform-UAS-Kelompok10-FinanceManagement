@@ -84,14 +84,27 @@ export default function ProfileScreen() {
               <Text style={styles.fullName}>({profile.full_name})</Text>
             )}
             <Text style={styles.username}>{profile?.username || 'User'}</Text>
-            <Text style={styles.id}>ID: {profile?.id?.split('-')[1]?.toUpperCase() ?? '....'}</Text>
+            <Text style={styles.id}>
+              ID: {profile?.id?.split('-')[1]?.toUpperCase() ?? '....'}
+            </Text>
           </View>
 
-
           <View style={styles.menuList}>
-            <MenuItem icon="person-outline" label="Edit Profile" onPress={() => router.push('/(profiles)/editProfiles')} />
-            <MenuItem icon="shield-checkmark-outline" label="Security" onPress={() => router.push('/(profiles)/security')}/>
-            <MenuItem icon="log-out-outline" label="Logout" onPress={handleLogout} />
+            <MenuItem
+              icon="person-outline"
+              label="Edit Profile"
+              onPress={() => router.push('/(profiles)/editProfiles')}
+            />
+            <MenuItem
+              icon="shield-checkmark-outline"
+              label="Security"
+              onPress={() => router.push('/(profiles)/security')}
+            />
+            <MenuItem
+              icon="log-out-outline"
+              label="Logout"
+              onPress={handleLogout}
+            />
           </View>
         </ScrollView>
       </View>
